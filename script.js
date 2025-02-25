@@ -8,6 +8,9 @@ let playerState = {
   currentSong: null,
   songCurrentTime: null,
   currentIndex: 0,
+
+  //Массив индексов перемешанных треков
+  shuffledIndices: [],
 };
 
 /**
@@ -59,6 +62,10 @@ class AudioController {
     this.progressTimer = null;
     this.audio.autoplay = false;
     this.audio.loop = false;
+
+    // Добавление свойства для режима воспроизведения
+    this.playMode = "repeat-all"; // Возможные значения: 'repeat-all', 'repeat-one', 'shuffle'
+
     this.setupAudioEventListeners();
   }
 
@@ -68,6 +75,9 @@ class AudioController {
   async init() {
     await this.getSongs();
     await this.updateCurrentSong();
+
+    // Предварительно перемешиваем плейлист в фоне
+    this.shuffleSongs();
   }
 
   /**
@@ -110,10 +120,25 @@ class AudioController {
     uiController.updateProgress(0, 0);
     this.audio.autoplay = true;
 
-    // Циклическое переключение треков
-    playerState.currentIndex === playerState.songs.length - 1
-      ? (playerState.currentIndex = 0)
-      : (playerState.currentIndex += 1);
+    //Случай работы в shuffle моде
+    if (this.playMode === "shuffle") {
+      // Находим текущий индекс в перемешанном массиве
+      const currentShuffleIndex = playerState.shuffledIndices.indexOf(
+        playerState.currentIndex
+      );
+
+      // Переходим к следующему в перемешанном списке или возвращаемся к началу
+      const nextShuffleIndex =
+        (currentShuffleIndex + 1) % playerState.shuffledIndices.length;
+
+      // Обновляем текущий индекс
+      playerState.currentIndex = playerState.shuffledIndices[nextShuffleIndex];
+    } else {
+      // Циклическое переключение треков
+      playerState.currentIndex === playerState.songs.length - 1
+        ? (playerState.currentIndex = 0)
+        : (playerState.currentIndex += 1);
+    }
 
     playerState.songCurrentTime = 0;
     this.updateCurrentSong();
@@ -129,10 +154,25 @@ class AudioController {
     this.stopProgressUpdate(); // останавливаем перед сменой трека
     this.audio.autoplay = true;
 
-    // Циклическое переключение треков
-    playerState.currentIndex === 0
-      ? (playerState.currentIndex = playerState.songs.length - 1)
-      : (playerState.currentIndex -= 1);
+    if (this.playMode === "shuffle") {
+      // Находим текущий индекс в перемешанном массиве
+      const currentShuffleIndex = playerState.shuffledIndices.indexOf(
+        playerState.currentIndex
+      );
+
+      // Переходим к предыдущему в перемешанном списке или к последнему, если в начале
+      const prevShuffleIndex =
+        (currentShuffleIndex - 1 + playerState.shuffledIndices.length) %
+        playerState.shuffledIndices.length;
+
+      // Обновляем текущий индекс
+      playerState.currentIndex = playerState.shuffledIndices[prevShuffleIndex];
+    } else {
+      // Циклическое переключение треков
+      playerState.currentIndex === 0
+        ? (playerState.currentIndex = playerState.songs.length - 1)
+        : (playerState.currentIndex -= 1);
+    }
 
     playerState.songCurrentTime = 0;
     this.updateCurrentSong();
@@ -143,8 +183,32 @@ class AudioController {
   /**
    * Включает/выключает режим повтора текущего трека (в работе)
    */
-  toggleRepeat() {
-    this.audio.loop = !this.audio.loop;
+  togglePlayMode() {
+    switch (this.playMode) {
+      case "repeat-all":
+        this.playMode = "repeat-one";
+        this.audio.loop = true;
+        break;
+      case "repeat-one":
+        this.playMode = "shuffle";
+        this.audio.loop = false;
+        // Если перемешанный массив не создан, создаем его
+        if (!playerState.shuffledIndices.length) {
+          this.shuffleSongs();
+        }
+        break;
+      case "shuffle":
+        this.playMode = "repeat-all";
+        this.audio.loop = false;
+        break;
+      default:
+        this.playMode = "repeat-all"; // На случай некорректного значения
+        this.audio.loop = false;
+    }
+
+    // Обновляем UI
+    uiController.updatePlayModeUI(this.playMode);
+    console.log(`Режим воспроизведения изменен на: ${this.playMode}`);
   }
 
   /**
@@ -211,6 +275,7 @@ class AudioController {
     try {
       const response = await fetch("./songs.json");
       const res = await response.json();
+      const previousLength = playerState.songs.length;
       playerState.songs = [...res];
       return playerState.songs;
     } catch (error) {
@@ -237,12 +302,46 @@ class AudioController {
   }
 
   /**
+   * Перемешивает порядок воспроизведения треков
+   * Создает новый массив индексов в случайном порядке
+   */
+  shuffleSongs() {
+    const totalTracks = playerState.songs.length;
+
+    // Создаем массив с индексами всех треков [0, 1, 2, ..., n-1]
+    const indices = Array.from({ length: totalTracks }, (_, i) => i);
+
+    // Перемешиваем массив используя алгоритм Фишера-Йейтса
+    for (let i = indices.length - 1; i > 0; i--) {
+      // Выбираем случайный индекс от 0 до i
+      const j = Math.floor(Math.random() * (i + 1));
+
+      // Меняем местами элементы i и j
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+
+    // Сохраняем перемешанный массив индексов
+    playerState.shuffledIndices = indices;
+
+    console.log("Плейлист перемешан:", playerState.shuffledIndices);
+  }
+
+  /**
    * Устанавливает позицию воспроизведения на указанный процент
    * @param {number} percentage - Процент от общей длительности трека
    */
   setupAudioEventListeners() {
     // При окончании трека переключаем на следующий
-    this.audio.addEventListener("ended", () => this.nextSong());
+    this.audio.addEventListener("ended", () => {
+      if (this.playMode === "repeat-one") {
+        // В режиме repeat-one трек автоматически повторяется благодаря audio.loop = true
+      } else if (
+        this.playMode === "shuffle" ||
+        this.playMode === "repeat-all"
+      ) {
+        this.nextSong(); // Используем обновленный nextSong
+      }
+    });
 
     // При постановке на паузу обновляем UI
     this.audio.addEventListener("pause", () => {
@@ -280,7 +379,7 @@ class UIController {
     this.pauseButton = document.getElementById("pause");
     this.nextButton = document.getElementById("next");
     this.prevButton = document.getElementById("prev");
-    this.shuffleButton = document.getElementById("shuffle");
+    this.playModeButton = document.getElementById("play-mode");
 
     // Элементы прогресс-бара
     this.progressBar = document.getElementById("progressBar");
@@ -346,6 +445,28 @@ class UIController {
   }
 
   /**
+   * Обновляет отображение кнопки режима воспроизведения
+   * @param {string} mode - Текущий режим ('repeat-all', 'repeat-one', 'shuffle')
+   */
+
+  updatePlayModeUI(mode) {
+    // Резет всех классов
+    this.playModeButton.classList.remove("repeat-all", "repeat-one", "shuffle");
+
+    this.playModeButton.classList.add(mode);
+
+    let modeText = "Repeat all tracks";
+    if (mode === "repeat-one") {
+      modeText = "Repeat current track";
+    } else if (mode === "shuffle") {
+      modeText = "Shuffle play";
+    }
+
+    this.playModeButton.setAttribute("aria-label", modeText);
+    this.playModeButton.setAttribute("title", modeText);
+  }
+
+  /**
    * Устанавливает обработчики событий для элементов UI
    */
   setupUIEventListeners() {
@@ -354,8 +475,8 @@ class UIController {
     this.pauseButton.addEventListener("click", () => audioController.pause());
     this.nextButton.addEventListener("click", () => audioController.nextSong());
     this.prevButton.addEventListener("click", () => audioController.prevSong());
-    this.shuffleButton.addEventListener("click", () =>
-      audioController.toggleRepeat()
+    this.playModeButton.addEventListener("click", () =>
+      audioController.togglePlayMode()
     );
 
     // Обработчик клика по прогресс-бару для перемотки

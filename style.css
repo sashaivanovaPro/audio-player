@@ -167,11 +167,23 @@ main {
   opacity: 1;
 }
 
-.shuffle {
-  background-image: url("./assets/images/png/shuffle-96.png");
+.play-mode {
   margin-left: auto;
   margin-right: 0;
-  opacity: 0.6;
+  opacity: 1;
+  transform: scale(1.2);
+  transform-origin: center;
+}
+
+.repeat-all {
+  background-image: url("./assets/images/png/repeat-all-100.png");
+}
+.repeat-one {
+  background-image: url("./assets/images/png/repeat-one-100.png");
+}
+
+.shuffle {
+  background-image: url("./assets/images/png/shuffle-96.png");
 }
 
 footer {
