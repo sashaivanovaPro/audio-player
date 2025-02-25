@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="icon"
+      href="./assets/images/png/favicon-icon.png"
+      type="image/png"
+    />
+    <title>Relaxing music</title>
+  </head>
+  <body>
+    <div class="wrapper" id="wrapper">
+      <main>
+        <div class="player">
+          <div class="player-bar">
+            <img src="" alt="icon of song" class="song-icon" id="song-icon" />
+            <div class="player-wrapper">
+              <div class="song-atributes">
+                <span class="song-author" id="song-author"></span>
+                <span class="song-title" id="song-title"></span>
+              </div>
+              <div id="progressBar" class="progress-bar">
+                <div
+                  class="progress-current-time"
+                  id="progressCurrentTime"
+                ></div>
+              </div>
+              <div class="player-buttons">
+                <div
+                  class="player-button play-song"
+                  aria-label="Play button"
+                  id="play"
+                ></div>
+                <div
+                  class="player-button previous-song"
+                  aria-label="Previous song"
+                  id="prev"
+                ></div>
+                <div
+                  class="player-button pause-song"
+                  aria-label="Pause song button"
+                  id="pause"
+                ></div>
+                <div
+                  class="player-button next-song"
+                  aria-label="Next song"
+                  id="next"
+                ></div>
+                <div
+                  class="player-button time-stamp"
+                  aria-label="playing time"
+                  id="time-stamp"
+                >
+                  00:00
+                </div>
+                <span
+                  class="player-button shuffle"
+                  aria-label="shuffle"
+                  id="shuffle"
+                ></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer>
+        <span> &copy; 2025</span>
+        <a
+          class="github-link"
+          href="https://github.com/sashaivanovaPro"
+          target="_blank"
+          ><img
+            class="github-logo"
+            src="./assets/images/png/GitHub.png"
+            alt="GitHub profile link"
+          /><span class="link-text">sashaivanovaPro</span></a
+        >
+      </footer>
+    </div>
+    <script src="./script.js"></script>
+  </body>
+</html>

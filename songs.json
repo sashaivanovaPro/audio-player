@@ -1,0 +1,47 @@
+[
+  {
+    "id": 0,
+    "title": "Perfect Beauty",
+    "artist": "Zakhar Valaha",
+    "duration": "7:20",
+    "src": "./assets/audio/perfect-beauty.mp3",
+    "icon": "./assets/images/png/Freepik.png",
+    "wallpaper": "./assets/images/jpeg/sunset-bay.jpeg"
+  },
+  {
+    "id": 1,
+    "title": "Relaxing",
+    "artist": "Anastasia Kir",
+    "duration": "1:12",
+    "src": "./assets/audio/relaxing.mp3",
+    "icon": "./assets/images/png/Freepik2.png",
+    "wallpaper": "./assets/images/jpeg/winter-mountain.jpg"
+  },
+  {
+    "id": 2,
+    "title": "Sonder",
+    "artist": "Purrple Cat",
+    "duration": "3:09",
+    "src": "./assets/audio/sonder.mp3",
+    "icon": "./assets/images/png/Freepik4.png",
+    "wallpaper": "./assets/images/jpeg/mountain-river.jpg"
+  },
+  {
+    "id": 3,
+    "title": "Sovereign",
+    "artist": "Kevin MacLeod",
+    "duration": "6:12",
+    "src": "./assets/audio/sovereign.mp3",
+    "icon": "./assets/images/png/Freepik5.png",
+    "wallpaper": "./assets/images/jpeg/stanley-lake.jpg"
+  },
+  {
+    "id": 4,
+    "title": "Downpour",
+    "artist": "Keys of Moon",
+    "duration": "3:59",
+    "src": "./assets/audio/downpour.mp3",
+    "icon": "./assets/images/png/xnimrodx.png",
+    "wallpaper": "./assets/images/jpeg/night-reflections.jpg"
+  }
+]
